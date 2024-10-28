@@ -1,75 +1,82 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { View, Text, Pressable, TextInput, ScrollView } from "react-native";
+import React, { useState } from "react";
 
-export default function Home() {
-  const [dogImage, setDogImage] = useState('');
-  const [loading, setLoading] = useState(true);
+export default function Home({ navigation }) {
+  const [pokemonName, setPokemonName] = useState("");
+  const [history, setHistory] = useState([]);
 
-  const fetchDogImage = async () => {
-    setLoading(true); // Establecemos el estado de carga en verdadero
-    try {
-      const response = await fetch('https://dog.ceo/api/breeds/image/random');
-      const data = await response.json();
-      setDogImage(data.message);
-    } catch (error) {
-      console.error('Error fetching dog image:', error);
-    } finally {
-      setLoading(false); // Terminamos la carga
+  const handleSearch = () => {
+    if (pokemonName) {
+      // Agregar al historial y navegar a la pantalla Principal
+      setHistory((prev) => {
+        const newHistory = [pokemonName, ...prev];
+        return newHistory.slice(0, 10); // Limita el historial a 10 elementos
+      });
+      navigation.navigate("Principal", { pokemonName }); // Asegúrate de que "Principal" sea el nombre correcto
+      setPokemonName(""); // Limpiar el input
+    } else {
+      alert("Por favor ingresa un nombre de Pokémon");
     }
   };
 
-  useEffect(() => {
-    fetchDogImage(); // Cargar una imagen al montar el componente
-  }, []);
-
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f0f0' }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>Home</Text>
-      <View style={styles.card}>
-        {loading ? (
-          <Text>Cargando...</Text>
-        ) : (
-          <>
-            <Image source={{ uri: dogImage }} style={styles.image} />
-            <TouchableOpacity style={styles.button} onPress={fetchDogImage}>
-              <Text style={styles.buttonText}>Cargar otra imagen</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
+    <View style={{ flex: 1, backgroundColor: "#87CEEB", justifyContent: "center", alignItems: "center" }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, padding: 20 }}>
+        <View style={{ 
+            width: 300, 
+            backgroundColor: "#ffffff", 
+            padding: 20, 
+            borderRadius: 10, 
+            elevation: 5, 
+            shadowColor: '#000', 
+            shadowOffset: { width: 0, height: 2 }, 
+            shadowOpacity: 0.2, 
+            shadowRadius: 4,
+            borderColor: "#000", 
+            borderWidth: 5, 
+            alignItems: "center" 
+          }}>
+          <Text style={{ fontSize: 20, fontWeight: "bold", textAlign: "center", color: "#000", marginBottom: 20 }}>
+            Buscar Pokémon
+          </Text>
+          <TextInput
+            placeholder="Ingresa el nombre del Pokémon"
+            value={pokemonName}
+            onChangeText={setPokemonName}
+            style={{
+              borderWidth: 1,
+              borderColor: "#ccc",
+              padding: 10,
+              marginVertical: 10,
+              borderRadius: 5,
+              backgroundColor: "#f0f8ff",
+              width: "100%",
+            }}
+          />
+          <Pressable
+            onPress={handleSearch}
+            style={{
+              backgroundColor: "#ff3366",
+              padding: 10,
+              borderRadius: 5,
+              alignItems: "center",
+              width: "100%",
+              marginTop: 10,
+            }}
+          >
+            <Text style={{ color: "#fff" }}>Buscar</Text>
+          </Pressable>
+
+          <Text style={{ marginTop: 20 }}>Historial de Búsquedas:</Text>
+          {history.length > 0 ? (
+            history.map((item, index) => (
+              <Text key={index} style={{ color: "#000" }}>{item}</Text>
+            ))
+          ) : (
+            <Text style={{ color: "#aaa" }}>No hay búsquedas anteriores.</Text>
+          )}
+        </View>
+      </ScrollView>
     </View>
   );
 }
-
-// Estilos
-const styles = {
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 15,
-    margin: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3, // Sombra en Android
-  },
-  image: {
-    width: 300,
-    height: 300,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  button: {
-    backgroundColor: '#6200ea',
-    borderRadius: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-};
